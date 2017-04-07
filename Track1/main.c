@@ -95,3 +95,59 @@ int B2( void )
 
 	  return 1;
   }
+  
+  // data determines if the LED is on or off, the delay determines the waiting period
+typedef struct {
+	char data;
+	int delay ;
+} step;
+
+
+//array with the pattern for B5
+step steps[] = {
+	{0x81,1000},{0x42,1000},{0x24,1000},{0x18,1000},
+	{0x81,500},{0x42,500},{0x24,500},{0x18,500},
+	{0x81,250},{0x42,250},{0x24,250},{0x18,250}
+};
+
+  int B5( void )
+  {
+	int index=0;
+	DDRD = 0xFF;	//PORTD to OUTPUT
+	while (1)
+	{
+		PORTD= steps[index].data;						//write value from array to PORTD
+		index++;
+		wait(steps[index].delay);			`			//wait for a bit so the pattern doesnt move like crazy
+		if((sizeof(steps)/sizeof(steps[0])) < index)		//check if end of array is reached
+			index = 0;					
+	}
+  }
+  
+  int B6( void )
+  {
+	DDRD = 0xFF;					// D to output
+	DDRC = 0x00;					// C to input
+	PORTD = 0x0;					// zet port D op 0
+	int toggle = 0;					
+	int waittime = 10;
+	int pressed = 0;
+	while (1)
+	{
+		if (PINC & 0x1)		{			// register button press
+			if(toggle == 0)
+			{
+				toggle = 1;
+				waittime = 500;				// 1 blink per second
+			}
+			else
+			{
+				toggle = 0;
+				waittime = 250;				// 2 blinks per second
+			}
+		}
+		wait(waittime);
+		PORTD ^= 0x40;					// toggle portD bit7
+	}
+	return -1;
+  }

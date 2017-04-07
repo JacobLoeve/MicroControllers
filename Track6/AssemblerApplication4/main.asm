@@ -32,7 +32,7 @@ main:
 	ldd		r20, Y+6
 	ldd		r21, Y+7
 
-; 16 bits optelling: r5/r4 = r9/r8 + r7/r6  (23 ab + 44 98 = 68 43)
+; 32 bits optelling: r5/r4 = r9/r8 + r7/r6  (23 ab + 44 98 = 68 43)
 						; Stap 1: 	tel de LSB’s op: r4 = r6+r8 
 	MOV		r4, r8		; 		r4 <- r8 		
 	ADD		r4, r6		; 		r4 <- r4+r6 		 misschien Carry gezet 
@@ -42,11 +42,11 @@ main:
 	MOV		r5, r9		; 		r5 <- r9 
 	ADC		r5, r7		; 		r5 <- r5+r7+C 
 
-	MOV		r18, r5		; 		r5 <- r9 
-	ADC		r18, r20		; 		r5 <- r5+r7+C 
+	MOV		r18, r5		; 		r18 <- r5
+	ADC		r18, r20		; 		r18 <- r18+r20+C 
 
-	MOV		r19, r18		; 		r5 <- r9 
-	ADC		r19, r21 	; 		r5 <- r5+r7+C 
+	MOV		r19, r18		; 		r19 <- r18
+	ADC		r19, r21 	; 		r19 <- r19+r20+C 
 ;
 ; Opslag resultaat
 ;

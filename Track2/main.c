@@ -69,41 +69,7 @@ ISR( INT2_vect )
 
 void display(int digit)
 {
-	switch (digit)
-	{
-		case 0: PORTB = Numbers[0];
-		break;
-		case 1: PORTB = Numbers[1];
-		break;
-		case 2: PORTB = Numbers[2];
-		break;
-		case 3: PORTB = Numbers[3];
-		break;
-		case 4: PORTB = Numbers[4];
-		break;
-		case 5: PORTB = Numbers[5];
-		break;
-		case 6: PORTB = Numbers[6];
-		break;
-		case 7: PORTB = Numbers[7];
-		break;
-		case 8: PORTB = Numbers[8];
-		break;
-		case 9: PORTB = Numbers[9];
-		break;
-		case 10: PORTB = Numbers[10];
-		break;
-		case 11: PORTB = Numbers[11];
-		break;
-		case 12: PORTB = Numbers[12];
-		break;
-		case 13: PORTB = Numbers[13];
-		break;
-		case 14: PORTB = Numbers[14];
-		break;
-		case 15: PORTB = Numbers[15];
-		break;
-	}
+	PORTB = Numbers[digit];
 }
 
 /******************************************************************/
@@ -143,5 +109,41 @@ Version :    	DMK, Initial code
 
 	return 1;
 }
+
+
+
+typedef struct { 
+	unsigned char data;
+	int delay ;
+} PATTERN_STRUCT; 
+
+
+PATTERN_STRUCT pattern[] = {
+	{0b00000001, 150},
+	{0x01, 150},
+	{0x40, 150},
+	{0x14, 150},
+	{0x08, 150}, 
+	{0xFF, 0}
+};
+
+int  B4 (void)
+{
+	DDRD = 0xFF;					// PORTD to output 
+	
+	while (1)
+	{
+		int index = 0;
+		while( pattern[index].delay != 0 ) 
+		{
+			PORTD = pattern[index].data;	// set PORTD with the value from array	
+			wait(pattern[index].delay);		// wait
+			index++;
+		}
+	}
+
+	return -1;
 }
+
+
 

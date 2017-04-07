@@ -29,9 +29,9 @@ static char str[10];
 void strobeLCD(void)
 {
 	PORTC |= (1<<LCD_E);	// E high
-	_delay_ms(1);			// nodig
+	_delay_ms(1);			// needed
 	PORTC &= ~(1<<LCD_E);  	// E low
-	_delay_ms(1);			// nodig?
+	_delay_ms(1);			// not really needed, but just to be sure
 }
 
 void initLCD(void)
@@ -70,6 +70,7 @@ void displayText(char *str)
 	}
 }
 
+// shift cursor to the given position
 void setCursor(int position)
 {
 	for(int i = 0; i < position; i++)
@@ -104,6 +105,7 @@ void lcd_write_command(unsigned char byte)
 	strobeLCD();
 }
 
+//clear the lcd by writing all empty
 void clearLCD( void )
 {
 	lcd_write_command(0x00);
@@ -122,7 +124,7 @@ int opdrachtB1( void )
 
 	//setCursor(2);
 	//lcd_write_command(0x14); // shift cursor 1 pos to right
-	lcd_write_command(0b11001000);
+	lcd_write_command(0xC8);  // or use 0b11001000
 
 	while (1)
 	{
@@ -138,7 +140,6 @@ int blinkingled( void )
 {
 	initLCD();
 	displayText("");
-	//DDRB |= (1 << 0);
 	DDRB = 0xFF;
 	TCCR1B |= ((1 << CS10) | (1 << CS11));
 	for(;;)
@@ -155,40 +156,40 @@ int blinkingled( void )
 //opgave B2
 void initCounter( void )
 {
-	TIMSK |= (1 << TOIE2);
-	TCNT2 = 0xFF;
-	TCCR2 = 0b00011111;
+	TIMSK |= (1 << TOIE2);	//enable TIMSK
+	TCNT2 = 0xFF;			//TCNT2 all high to initialize
+	TCCR2 = 0b00011111;		//TCCR2 first 5 bits high, last 3 bit low
 }
 //opgave B2
 ISR( TIMER2_OVF_vect )
 {
 	TCNT2 = 0xFF;
-	count++;
+	count++;		//count 1 on interrupt
 }
 //opgave B2
 int opdrachtB2( void )
 {
 		// Init I/O
-		DDRB = 0xFF;			//PORTB all output
-		PORTB = 0x00;			//PORTB all LED's off
-		DDRD = 0x00;
+		DDRB = 0xFF;			//DDRB all output
+		PORTB = 0x00;			//PORTB all input, thus LEDs off
+		DDRD = 0x00;			//DDRD all input
 
-		initLCD();
-		clearLCD();
+		initLCD();				//initialize LCD
+		clearLCD();				//clear LCD to be sure there are no chars on it
 		_delay_ms(50);
 
 		initCounter();
-		sei();
+		sei();					//enable global interrupts
 
 		while (1)
 		{
 			clearLCD();
 
-			sprintf(str, "%d", count);
-			displayText(str);
-			memset(str, 0, 10);
+			sprintf(str, "%d", count);		// show value in output
+			displayText(str);				// write value to LCD
+			memset(str, 0, 10);				// write str to memory
 
-			_delay_ms(1000);
+			_delay_ms(1000);				//wait 1 second
 		}
 
 		return 0;
@@ -197,35 +198,35 @@ int opdrachtB2( void )
 //opgave B3
 void timerInit()
 {
-	TIMSK |= 0xFF;
-	TCNT2 = 0;
-	OCR2 = COMP1;
-	TCCR2 = 0x1D;
+	TIMSK |= 0xFF;			//TIMSK all high
+	TCNT2 = 0;				//TCNT2=0 to initialize
+	OCR2 = COMP1;			//initialize compare value
+	TCCR2 = 0x1D;			//initialize TCCR2
 }
 //opgave B3
 ISR(TIMER2_COMP_vect)
 {
-	if(OCR2 == COMP1)
+	if(OCR2 == COMP1) 
 	{
 		OCR2 = COMP2;
-		PORTC = 0x80;
+		PORTC = 0x80; //PORTC has high value, LEDs turn on
 	}
 	else if(OCR2 == COMP2)
 	{
 		OCR2 = COMP1;
-		PORTC = 0x00;
+		PORTC = 0x00; //PORTC has low value, LEDs turn off
 	}
 }
 // opgave B3
 int main(void)
 {
-	DDRC = 0xFF;
-	DDRD = 0x00;
-	timerInit();
-	sei();
+	DDRC = 0xFF;		//DDRC to output
+	DDRD = 0x00;		//DDRD to input
+	timerInit();		//initialize the timer
+	sei();				//enable global interrupts
 	while(1)
 	{
-		
+						// do nothing, the interrupt will handle stuff if there is input
 	}
 
 	return 0;
